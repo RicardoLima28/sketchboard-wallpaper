@@ -1,0 +1,68 @@
+{
+  "name": "sketchboard-wallpaper",
+  "version": "0.2.0",
+  "description": "Sketchboard Wallpaper — powered by Excalidraw. Desenhe direto na área de trabalho do Windows, sem Wallpaper Engine.",
+  "main": "src/main/main.js",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "node build.mjs && electron .",
+    "dist": "node build.mjs && electron-builder --win"
+  },
+  "dependencies": {
+    "koffi": "^3.3.2"
+  },
+  "devDependencies": {
+    "@excalidraw/excalidraw": "^0.18.1",
+    "electron": "^44.6.0",
+    "electron-builder": "^26.15.3",
+    "esbuild": "^0.28.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "author": "RicardoLima28",
+  "build": {
+    "appId": "io.github.sketchboard.wallpaper",
+    "productName": "Sketchboard Wallpaper",
+    "icon": "assets/icon.png",
+    "files": [
+      "dist/**/*",
+      "src/main/**/*",
+      "assets/icon.png",
+      "LICENSE",
+      "THIRD_PARTY_NOTICES.txt",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "**/*.node"
+    ],
+    "directories": {
+      "output": "out"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "runAfterFinish": true,
+      "createDesktopShortcut": false,
+      "createStartMenuShortcut": true,
+      "deleteAppDataOnUninstall": false,
+      "include": "build/installer.nsh"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RicardoLima28/sketchboard-wallpaper.git"
+  },
+  "homepage": "https://github.com/RicardoLima28/sketchboard-wallpaper"
+}
