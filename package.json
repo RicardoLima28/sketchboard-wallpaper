@@ -51,6 +51,7 @@
       ]
     },
     "nsis": {
+      "artifactName": "Sketchboard-Wallpaper-Setup-${version}.${ext}",
       "oneClick": true,
       "perMachine": false,
       "runAfterFinish": true,

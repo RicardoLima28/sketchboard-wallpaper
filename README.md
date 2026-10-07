@@ -43,6 +43,16 @@ npm start      # run from source
 npm run dist   # build the installer into out/
 ```
 
+### Releasing
+
+Installers are built by GitHub Actions (`.github/workflows/release.yml`):
+
+1. Bump the version: `npm version 0.2.2 --no-git-tag-version`, then commit and push.
+2. Tag it: `git tag v0.2.2 && git push origin v0.2.2`.
+3. The workflow builds the installer and attaches it to a **draft** release. Edit the notes on GitHub and publish.
+
+You can also build without releasing from the Actions tab (**Run workflow**); the installer is then available as an artifact of the run.
+
 ## Project structure
 
 ```

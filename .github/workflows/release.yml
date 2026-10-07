@@ -1,0 +1,59 @@
+# Builds the Windows installer on GitHub's servers.
+#  - push a tag like v0.2.2: builds and attaches the installer to a draft
+#    release for that tag (edit the notes, then publish it)
+#  - "Run workflow" button (Actions tab): builds only; the installer is
+#    available as a downloadable artifact of the run
+name: Build installer
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Check tag matches package.json version
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match package.json version ${version}"
+            exit 1
+          fi
+
+      - run: npm ci
+
+      # --publish never: the release is handled below, not by electron-builder
+      - run: npm run dist -- --publish never
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer
+          path: out/Sketchboard-Wallpaper-Setup-*.exe
+          if-no-files-found: error
+
+      - name: Attach installer to release
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          file=$(ls out/Sketchboard-Wallpaper-Setup-*.exe)
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$file" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "$file" --draft --title "$GITHUB_REF_NAME" --generate-notes
+          fi
