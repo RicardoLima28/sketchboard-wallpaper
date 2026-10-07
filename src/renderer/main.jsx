@@ -8,7 +8,7 @@ const SCENE_KEY = "wp-excalidraw-scene";
 const DB_NAME = "wp-excalidraw";
 const FILES_STORE = "files";
 
-// IndexedDB guarda as imagens (podem ser grandes demais para o localStorage)
+// IndexedDB stores the images (they can be too large for localStorage)
 const openDb = () =>
   new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, 1);
@@ -77,7 +77,7 @@ const App = () => {
     try {
       localStorage.setItem(SCENE_KEY, serializeAsJSON(live, appState, {}, "local"));
     } catch (err) {
-      console.error("Falha ao salvar a cena", err);
+      console.error("Failed to save the scene", err);
     }
     const newFiles = Object.values(files).filter((f) => !savedFileIds.current.has(f.id));
     newFiles.forEach((f) => savedFileIds.current.add(f.id));
@@ -95,7 +95,7 @@ const App = () => {
 
   useEffect(() => {
     window.wallpaper?.onMode((next) => {
-      // salva ao voltar para o fundo, antes de esconder a interface
+      // save when going back to the background, before the UI is hidden
       if (next === "wallpaper") flush();
       document.body.dataset.mode = next;
       setMode(next);
@@ -111,7 +111,7 @@ const App = () => {
     () =>
       drawing && (
         <button className="wp-back" onClick={() => window.wallpaper?.toggle()} title="Ctrl+Alt+D">
-          Voltar ao papel de parede
+          Back to wallpaper
         </button>
       ),
     [drawing],
@@ -122,7 +122,7 @@ const App = () => {
       <Excalidraw
         initialData={initialData}
         onChange={onChange}
-        langCode="pt-BR"
+        langCode="en"
         UIOptions={uiOptions}
         renderTopRightUI={renderTopRightUI}
         handleKeyboardGlobally

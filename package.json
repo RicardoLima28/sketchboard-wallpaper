@@ -1,7 +1,7 @@
 {
   "name": "sketchboard-wallpaper",
   "version": "0.2.0",
-  "description": "Sketchboard Wallpaper — powered by Excalidraw. Desenhe direto na área de trabalho do Windows, sem Wallpaper Engine.",
+  "description": "Sketchboard Wallpaper — powered by Excalidraw. Draw directly on your Windows desktop, no Wallpaper Engine required.",
   "main": "src/main/main.js",
   "private": true,
   "license": "MIT",

@@ -1,9 +1,9 @@
-// Interação direto na área de trabalho, como no Wallpaper Engine: hooks
-// globais de mouse e teclado repassam para o quadro o que acontece sobre a
-// área de trabalho, sem precisar trocar de modo.
-//  - mouse: cópia dos eventos sobre a área de trabalho (os ícones continuam
-//    recebendo o clique; o botão direito fica só com o menu do Windows)
-//  - teclado: com a área de trabalho em foco, as teclas vão só para o quadro
+// Direct interaction on the desktop, like Wallpaper Engine: global mouse and
+// keyboard hooks forward to the board whatever happens over the desktop,
+// without having to switch modes.
+//  - mouse: a copy of the events over the desktop (icons still receive the
+//    click; the right button is left to the Windows context menu only)
+//  - keyboard: while the desktop has focus, keys go only to the board
 const koffi = require("koffi");
 const { screen } = require("electron");
 
@@ -54,8 +54,8 @@ const className = (hwnd) => {
   return String.fromCharCode(...buf.subarray(0, n));
 };
 
-// a área de trabalho (ícones, fundo ou o próprio quadro) é tudo cuja janela
-// raiz é o Progman/WorkerW
+// the desktop (icons, background or the board itself) is anything whose root
+// window is Progman/WorkerW
 const desktopAt = (pt) => {
   const hwnd = WindowFromPoint(pt);
   return !!hwnd && DESKTOP_CLASSES.has(className(GetAncestor(hwnd, GA_ROOT) || hwnd));
@@ -74,7 +74,7 @@ const createMouseForwarder = (getWin) => {
   const held = new Set();
   let last = { time: 0, x: 0, y: 0, count: 0 };
 
-  // ponto físico da tela -> coordenadas da página (DIP, relativas ao monitor principal)
+  // physical screen point -> page coordinates (DIP, relative to the primary monitor)
   const toPage = (pt) => {
     const dip = screen.screenToDipPoint(pt);
     const { bounds } = screen.getPrimaryDisplay();
@@ -104,13 +104,13 @@ const createMouseForwarder = (getWin) => {
       }
       send({ type: down ? "mouseDown" : "mouseUp", x: pos.x, y: pos.y, button, clickCount: last.count, modifiers: modifiers() });
     } else if (msg === 0x20a) {
-      const delta = (info.mouseData | 0) >> 16; // palavra alta com sinal (WHEEL_DELTA)
+      const delta = (info.mouseData | 0) >> 16; // signed high word (WHEEL_DELTA)
       send({ type: "mouseWheel", x: pos.x, y: pos.y, deltaX: 0, deltaY: delta, canScroll: true, modifiers: [] });
     }
   };
 };
 
-// ---------------------------------------------------------------- teclado
+// ---------------------------------------------------------------- keyboard
 
 const NAMED = {
   0x08: "Backspace", 0x09: "Tab", 0x0d: "Enter", 0x1b: "Escape", 0x20: " ",
@@ -129,8 +129,8 @@ const code = (vk) => {
   return NAMED[vk] ?? "";
 };
 
-// caractere que a tecla produz no layout atual (ABNT2 etc.), sem mexer no
-// estado de teclas mortas do sistema (flag 0x4)
+// character the key produces in the current layout (ABNT2 etc.), without
+// touching the system's dead-key state (flag 0x4)
 const translate = (vk, scan, shift, altGr) => {
   const state = new Uint8Array(256);
   if (shift) state[0x10] = 0x80;
@@ -148,7 +148,7 @@ const createKeyForwarder = (getWin, isHotkey) => {
   const mods = {};
   const forwardedDown = new Set();
 
-  // devolve true quando a tecla foi para o quadro (e deve ser engolida)
+  // returns true when the key went to the board (and must be swallowed)
   return (msg, info) => {
     const vk = info.vkCode;
     const down = msg === 0x100 || msg === 0x104;
@@ -158,13 +158,13 @@ const createKeyForwarder = (getWin, isHotkey) => {
     if (up && !forwardedDown.has(vk)) return false;
 
     const shift = mods[0xa0] || mods[0xa1];
-    const altGr = !!mods[0xa5]; // AltGr chega como Ctrl esquerdo + Alt direito
+    const altGr = !!mods[0xa5]; // AltGr arrives as left Ctrl + right Alt
     const ctrl = (mods[0xa2] || mods[0xa3]) && !altGr;
     const alt = mods[0xa4] && !altGr;
     const win = mods[0x5b] || mods[0x5c];
 
     if (down) {
-      // atalhos do sistema e do próprio app continuam funcionando
+      // system shortcuts and the app's own hotkey keep working
       if (win || (alt && [0x09, 0x73, 0x1b].includes(vk)) || isHotkey(vk, ctrl, alt) || !desktopFocused()) return false;
     }
 
@@ -195,7 +195,7 @@ const createKeyForwarder = (getWin, isHotkey) => {
 
 let hooks = [];
 
-// enabled(): se o quadro está atrás dos ícones (no modo tela cheia não repassa nada)
+// enabled(): whether the board is behind the icons (nothing is forwarded in fullscreen mode)
 const startDesktopInput = ({ getWin, enabled, isHotkey }) => {
   stopDesktopInput();
   const mouse = createMouseForwarder(getWin);
@@ -210,13 +210,13 @@ const startDesktopInput = ({ getWin, enabled, isHotkey }) => {
         console.error(err);
       }
     }
-    return CallNextHookEx(0, code, wParam, lParam); // o clique segue para os ícones
+    return CallNextHookEx(0, code, wParam, lParam); // the click continues on to the icons
   }, koffi.pointer(HookProc));
 
   const keyCb = koffi.register((code, wParam, lParam) => {
     if (code >= 0 && enabled()) {
       try {
-        if (keys(Number(wParam), koffi.decode(lParam, KBDLLHOOKSTRUCT))) return 1; // o Explorer não recebe (evita Delete em arquivos)
+        if (keys(Number(wParam), koffi.decode(lParam, KBDLLHOOKSTRUCT))) return 1; // Explorer doesn't get it (avoids Delete on files)
       } catch (err) {
         console.error(err);
       }
@@ -228,7 +228,7 @@ const startDesktopInput = ({ getWin, enabled, isHotkey }) => {
     { handle: SetWindowsHookExW(WH_MOUSE_LL, mouseCb, mod, 0), cb: mouseCb },
     { handle: SetWindowsHookExW(WH_KEYBOARD_LL, keyCb, mod, 0), cb: keyCb },
   ];
-  if (hooks.some((h) => !h.handle)) console.error("Falha ao instalar os hooks de entrada");
+  if (hooks.some((h) => !h.handle)) console.error("Failed to install input hooks");
 };
 
 const stopDesktopInput = () => {

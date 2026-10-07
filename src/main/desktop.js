@@ -1,6 +1,6 @@
-// Chamadas Win32 para colocar uma janela atrás dos ícones da área de trabalho.
-// A camada certa é uma janela "WorkerW" que o Explorer cria ao receber a
-// mensagem 0x052C. A posição dela mudou no Windows 11 24H2.
+// Win32 calls to place a window behind the desktop icons.
+// The right layer is a "WorkerW" window that Explorer creates when it receives
+// message 0x052C. Its position in the window tree changed in Windows 11 24H2.
 const koffi = require("koffi");
 
 const user32 = koffi.load("user32.dll");
@@ -19,7 +19,7 @@ const GetWindowLongPtrW = user32.func("intptr_t __stdcall GetWindowLongPtrW(intp
 const SetWindowLongPtrW = user32.func("intptr_t __stdcall SetWindowLongPtrW(intptr_t hwnd, int index, intptr_t value)");
 
 const GWL_STYLE = -16;
-// estilo limpo de janela filha: sem a moldura invisível de redimensionar
+// clean child-window style: without the invisible resize border
 const WS_CHILD_CLEAN = 0x40000000 | 0x10000000 | 0x04000000 | 0x02000000; // CHILD | VISIBLE | CLIPSIBLINGS | CLIPCHILDREN
 const SWP_NOACTIVATE = 0x0010;
 const SWP_SHOWWINDOW = 0x0040;
@@ -30,12 +30,12 @@ const hwndOf = (win) => {
   return Number(buf.length === 8 ? buf.readBigInt64LE() : buf.readInt32LE());
 };
 
-// Devolve { parent, after }: a janela que vai conter o wallpaper e, no
-// layout 24H2, a camada de ícones que deve ficar por cima dele.
+// Returns { parent, after }: the window that will host the wallpaper and, in
+// the 24H2 layout, the icon layer that must stay on top of it.
 const findDesktopLayer = () => {
   const progman = FindWindowW("Progman", null);
   if (!progman) return null;
-  // pede ao Explorer para criar a WorkerW atrás dos ícones
+  // ask Explorer to create the WorkerW behind the icons
   SendMessageTimeoutW(progman, 0x052c, 0xd, 0x1, 0, 1000, [0]);
   SendMessageTimeoutW(progman, 0x052c, 0, 0, 0, 1000, [0]);
 
@@ -43,7 +43,7 @@ const findDesktopLayer = () => {
   const innerWorker = FindWindowExW(progman, 0, "WorkerW", null);
   if (innerWorker) return { parent: innerWorker, after: 0 };
 
-  // Layout antigo: WorkerW(ícones) -> SHELLDLL_DefView; a WorkerW seguinte é o fundo
+  // Older layout: WorkerW(icons) -> SHELLDLL_DefView; the next WorkerW is the background
   let worker = 0;
   const cb = koffi.register((top) => {
     if (FindWindowExW(top, 0, "SHELLDLL_DefView", null)) {
@@ -59,15 +59,15 @@ const findDesktopLayer = () => {
   }
   if (worker) return { parent: worker, after: 0 };
 
-  // Último recurso: dentro do Progman, logo abaixo da camada de ícones
+  // Last resort: inside Progman, right below the icon layer
   const defView = FindWindowExW(progman, 0, "SHELLDLL_DefView", null);
   return { parent: progman, after: defView || 0 };
 };
 
-// estilo original de cada janela, restaurado ao sair do fundo
+// original style of each window, restored when leaving the background
 const originalStyle = new Map();
 
-// rect em pixels físicos, relativo ao canto superior esquerdo da tela virtual
+// rect in physical pixels, relative to the top-left corner of the virtual screen
 const attachToDesktop = (win, rect) => {
   const layer = findDesktopLayer();
   if (!layer) return false;

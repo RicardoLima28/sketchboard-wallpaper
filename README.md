@@ -2,57 +2,64 @@
 
 # Sketchboard Wallpaper — powered by Excalidraw
 
-Um quadro de desenho como papel de parede do Windows: desenhe e escreva direto na área de trabalho, sem Wallpaper Engine. O editor de desenho é o [Excalidraw](https://github.com/excalidraw/excalidraw).
+A drawing board as your Windows wallpaper: draw and write right on the desktop, no Wallpaper Engine required. The drawing editor is [Excalidraw](https://github.com/excalidraw/excalidraw).
 
-> Projeto independente e não oficial, sem afiliação com o Excalidraw. "Excalidraw" é marca de seus respectivos donos e é citado aqui apenas para indicar a tecnologia usada.
+> Independent, unofficial project with no affiliation to Excalidraw. "Excalidraw" is a trademark of its respective owners and is mentioned here only to indicate the technology used.
 
-## Como funciona
+## How it works
 
-Uma única janela alterna entre dois modos:
+A single window switches between two modes:
 
-| Modo | Onde fica | Interação |
+| Mode | Where it lives | Interaction |
 | --- | --- | --- |
-| Papel de parede (padrão) | Atrás dos ícones da área de trabalho (camada `WorkerW`) | Desenhe e digite direto na área de trabalho, como no Wallpaper Engine; os ícones continuam funcionando |
-| Tela cheia | Por cima de tudo | Para desenhar com janelas abertas |
+| Wallpaper (default) | Behind the desktop icons (the `WorkerW` layer) | Draw and type directly on the desktop, like Wallpaper Engine; desktop icons keep working |
+| Fullscreen | On top of everything | For drawing while other windows are open |
 
-- Mouse sobre a área de trabalho vai para o quadro; o botão direito continua abrindo o menu do Windows e arrastar um ícone continua movendo o ícone.
-- Com a área de trabalho em foco (clique nela ou Win+D), o teclado vai para o quadro, com acentos do layout ABNT2.
-- **Ctrl+Alt+D** abre/fecha a tela cheia (ou duplo clique no ícone da bandeja).
-- O desenho é salvo automaticamente (cena no `localStorage`, imagens no IndexedDB, em `%APPDATA%\sketchboard-wallpaper`).
-- Menu da bandeja: desenhar, iniciar com o Windows, sair.
+- Mouse input over the desktop goes to the board; right-click still opens the Windows context menu, and dragging an icon still moves the icon.
+- While the desktop has focus (click it or press Win+D), keyboard input goes to the board, including dead-key accents from layouts such as ABNT2.
+- **Ctrl+Alt+D** opens/closes fullscreen mode (or double-click the tray icon).
+- Your drawing is saved automatically (scene in `localStorage`, images in IndexedDB, under `%APPDATA%\sketchboard-wallpaper`).
+- Tray menu: draw, start with Windows, quit.
 
-Tudo roda dentro do app: hooks globais de mouse e teclado (`src/main/input.js`), sem script nem servidor local.
+Everything runs inside the app: global mouse and keyboard hooks (`src/main/input.js`), no scripts or local server.
 
-## Instalar (usuários)
+## Install (users)
 
-Baixe `Sketchboard Wallpaper Setup.exe` em Releases e abra. A instalação é em um clique, sem pedir administrador; o app abre na hora e passa a iniciar junto com o Windows (dá para desligar no ícone da bandeja). Para remover: Configurações > Aplicativos.
+Download `Sketchboard Wallpaper Setup.exe` from Releases and run it. Installation is one click and does not require administrator rights; the app opens right away and starts with Windows from then on (you can turn this off from the tray icon). To uninstall: Settings > Apps.
 
-## Desenvolver
+> The installer is not code-signed yet, so Windows SmartScreen may show "Windows protected your PC". Click **More info › Run anyway**.
 
-Requer Node.js 18+ e Windows 10/11.
+## Development
+
+Requires Node.js 18+ and Windows 10/11.
 
 ```sh
 npm install
-npm start      # roda a partir do código
-npm run dist   # gera o instalador em out/
+npm start      # run from source
+npm run dist   # build the installer into out/
 ```
 
-## Estrutura
+## Project structure
 
 ```
-src/main/main.js      processo principal: modos, atalho, bandeja
-src/main/desktop.js   chamadas Win32 (koffi) para entrar atrás dos ícones
-src/main/input.js     repassa mouse/teclado da área de trabalho ao quadro
-src/main/preload.js   ponte mínima entre a página e o processo principal
-src/renderer/main.jsx app Excalidraw + salvamento
-src/renderer/keyBridge.js entrega as teclas ao Excalidraw (acentos, edição de texto)
-build/installer.nsh   desinstalador remove o início automático
-build.mjs             empacota o renderer em dist/ (esbuild) e copia fontes e licenças
+src/main/main.js          main process: modes, hotkey, tray
+src/main/desktop.js       Win32 calls (koffi) to place the window behind the icons
+src/main/input.js         forwards desktop mouse/keyboard input to the board
+src/main/preload.js       minimal bridge between the page and the main process
+src/renderer/main.jsx     Excalidraw app + autosave
+src/renderer/keyBridge.js delivers keystrokes to Excalidraw (accents, text editing)
+build/installer.nsh       uninstaller removes the auto-start entry
+build.mjs                 bundles the renderer into dist/ (esbuild) and copies fonts and licenses
 ```
 
-## Licença e créditos
+## Known limitations
 
-- Este projeto: [MIT](LICENSE).
+- Covers the primary monitor only.
+- While the desktop has focus, keystrokes go to the board (F2/Delete on desktop icons don't work there).
+
+## License and credits
+
+- This project: [MIT](LICENSE).
 - [Excalidraw](https://github.com/excalidraw/excalidraw): MIT, © 2020 Excalidraw.
-- Fontes incluídas (Excalifont, Virgil, Nunito, Lilita One, Assistant, Cascadia Code, Liberation Sans, Xiaolai): SIL Open Font License 1.1; Comic Shanns: MIT.
-- Demais dependências e textos completos: [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt). O mesmo arquivo vai junto no instalador.
+- Bundled fonts (Excalifont, Virgil, Nunito, Lilita One, Assistant, Cascadia Code, Liberation Sans, Xiaolai): SIL Open Font License 1.1; Comic Shanns: MIT.
+- Other dependencies and full license texts: [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt). The same file ships with the installer.

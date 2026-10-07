@@ -1,7 +1,7 @@
-// Recebe as teclas capturadas pelo processo principal (src/main/input.js)
-// enquanto a área de trabalho está em foco e as entrega ao Excalidraw.
+// Receives the keys captured by the main process (src/main/input.js)
+// while the desktop has focus and delivers them to Excalidraw.
 
-// teclas mortas do layout ABNT2 -> acento combinante
+// ABNT2-layout dead keys -> combining accent mark
 const DEAD_MARKS = { "´": "́", "`": "̀", "~": "̃", "^": "̂", "¨": "̈" };
 
 const isEditable = (el) =>
@@ -65,7 +65,7 @@ export const startKeyBridge = () => {
   let dead = null;
 
   const handleEditable = (el, ev) => {
-    // o Excalidraw trata Escape, Ctrl+Enter, Tab etc. no keydown do campo
+    // Excalidraw handles Escape, Ctrl+Enter, Tab etc. on the field's keydown
     if (dispatchKey(el, ev)) return;
     if (ev.ctrl && !ev.alt) {
       const k = ev.key.toLowerCase();
