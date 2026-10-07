@@ -144,7 +144,7 @@ const translate = (vk, scan, shift, altGr) => {
   return { key: s && s.charCodeAt(0) >= 0x20 ? s : "", dead: false };
 };
 
-const createKeyForwarder = (getWin, isHotkey) => {
+const createKeyForwarder = (getWin) => {
   const mods = {};
   const forwardedDown = new Set();
 
@@ -164,8 +164,8 @@ const createKeyForwarder = (getWin, isHotkey) => {
     const win = mods[0x5b] || mods[0x5c];
 
     if (down) {
-      // system shortcuts and the app's own hotkey keep working
-      if (win || (alt && [0x09, 0x73, 0x1b].includes(vk)) || isHotkey(vk, ctrl, alt) || !desktopFocused()) return false;
+      // system shortcuts keep working
+      if (win || (alt && [0x09, 0x73, 0x1b].includes(vk)) || !desktopFocused()) return false;
     }
 
     let key = NAMED[vk];
@@ -196,10 +196,10 @@ const createKeyForwarder = (getWin, isHotkey) => {
 let hooks = [];
 
 // enabled(): whether the board is behind the icons (nothing is forwarded in fullscreen mode)
-const startDesktopInput = ({ getWin, enabled, isHotkey }) => {
+const startDesktopInput = ({ getWin, enabled }) => {
   stopDesktopInput();
   const mouse = createMouseForwarder(getWin);
-  const keys = createKeyForwarder(getWin, isHotkey);
+  const keys = createKeyForwarder(getWin);
   const mod = GetModuleHandleW(null);
 
   const mouseCb = koffi.register((code, wParam, lParam) => {

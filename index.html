@@ -6,7 +6,8 @@
   <title>Sketchboard Wallpaper</title>
   <link rel="stylesheet" href="main.css" />
   <style>
-    html, body, #root { margin: 0; height: 100%; overflow: hidden; background: #fff; }
+    html, body, #root { margin: 0; height: 100%; overflow: hidden; }
+    html { background: #fff; }
     .wp-back {
       font: 500 13px system-ui, sans-serif; padding: 0 12px; height: 36px; border-radius: 8px;
       border: 1px solid var(--color-surface-low, #ddd); background: var(--island-bg-color, #fff);
@@ -17,6 +18,10 @@
   <script>
     // Fonts are served locally (works offline)
     window.EXCALIDRAW_ASSET_PATH = new URL("./", location.href).href;
+    // dark background before Excalidraw loads, so a dark board doesn't flash white
+    try {
+      if (localStorage.getItem("wp-excalidraw-theme") === "dark") document.documentElement.style.background = "#121212";
+    } catch {}
   </script>
 </head>
 <body>

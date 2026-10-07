@@ -17,9 +17,13 @@ A single window switches between two modes:
 
 - Mouse input over the desktop goes to the board; right-click still opens the Windows context menu, and dragging an icon still moves the icon.
 - While the desktop has focus (click it or press Win+D), keyboard input goes to the board, including dead-key accents from layouts such as ABNT2.
-- **Ctrl+Alt+D** opens/closes fullscreen mode (or double-click the tray icon).
+- **Double-click the tray icon** (or use its menu) to open/close fullscreen mode.
 - Your drawing is saved automatically (scene in `localStorage`, images in IndexedDB, under `%APPDATA%\sketchboard-wallpaper`).
-- Tray menu: draw, start with Windows, quit.
+- Tray menu (right-click the icon): fullscreen, language, start with Windows, quit.
+
+### Languages
+
+Right-click the tray icon > **Language** to switch between English, Português (Brasil) and Español. The choice applies to the tray menu and the whole drawing editor, and is saved in `settings.json`. On first run the app follows the Windows display language, falling back to English. Translations live in `src/main/i18n.js`.
 
 Everything runs inside the app: global mouse and keyboard hooks (`src/main/input.js`), no scripts or local server.
 
@@ -42,7 +46,8 @@ npm run dist   # build the installer into out/
 ## Project structure
 
 ```
-src/main/main.js          main process: modes, hotkey, tray
+src/main/main.js          main process: modes, tray, settings
+src/main/i18n.js          UI translations (tray menu and editor language)
 src/main/desktop.js       Win32 calls (koffi) to place the window behind the icons
 src/main/input.js         forwards desktop mouse/keyboard input to the board
 src/main/preload.js       minimal bridge between the page and the main process
