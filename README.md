@@ -72,6 +72,21 @@ build.mjs                 bundles the renderer into dist/ (esbuild) and copies f
 - Covers the primary monitor only.
 - While the desktop has focus, keystrokes go to the board (F2/Delete on desktop icons don't work there).
 
+## Privacy
+
+This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it.
+
+Your drawings and settings are stored only on your computer, under `%APPDATA%\sketchboard-wallpaper`. The app has no telemetry, analytics or accounts.
+
+## Code signing policy
+
+Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+
+- Committers and reviewers: [RicardoLima28](https://github.com/RicardoLima28)
+- Approvers: [RicardoLima28](https://github.com/RicardoLima28)
+
+Only installers built by GitHub Actions from this repository's source are signed.
+
 ## License and credits
 
 - This project: [MIT](LICENSE).
